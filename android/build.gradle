@@ -16,7 +16,7 @@ android {
     }
     defaultConfig {
         applicationId "jp.techacademy.yousuke.tanaka.jumpactiongame"
-        minSdkVersion 8
+        minSdkVersion 9
         targetSdkVersion 24
     }
 }
@@ -122,5 +122,10 @@ idea {
                 }
             }
         }
+    }
+
+    //Google Play 開発者サービス SDK を参照
+    dependencies {
+        compile 'com.google.android.gms:play-services:6.+'
     }
 }
