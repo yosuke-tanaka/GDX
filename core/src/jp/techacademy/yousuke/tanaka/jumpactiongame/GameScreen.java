@@ -24,7 +24,7 @@ public class GameScreen extends ScreenAdapter {
     static final float CAMERA_HEIGHT = 15;
 
     static final float WORLD_WIDTH = 10;
-    static final float WORLD_HEIGHT = 15 * 8; // xx画面分登れば終了
+    static final float WORLD_HEIGHT = 15 * 4; // xx画面分登れば終了
 
     // GUI用のカメラのサイズ
     static final float GUI_WIDTH = 320;
@@ -70,7 +70,11 @@ public class GameScreen extends ScreenAdapter {
 
     Preferences mPrefs;
 
-
+    // 効果音
+    Sound mSoundCrear = Gdx.audio.newSound(Gdx.files.internal("se/crear.mp3"));
+    Sound mSoundStar = Gdx.audio.newSound(Gdx.files.internal("se/star.mp3"));
+    Sound mSoundKill = Gdx.audio.newSound(Gdx.files.internal("se/kill.mp3"));
+    Sound mSoundJump = Gdx.audio.newSound(Gdx.files.internal("se/jump.mp3"));
 
 
     /**
@@ -284,7 +288,7 @@ public class GameScreen extends ScreenAdapter {
             }
 
             // Enemy
-            else if (mRandom.nextFloat() > 0.7f) {
+            if (mRandom.nextFloat() > 0.7f) {
                 // ランダムでグラフィックを変更
                 tmpTexture = enemyTextures[Math.abs(mRandom.nextInt()) % 3];
                 Enemy enemy = new Enemy(tmpTexture, 0, 0, 72, 72);
@@ -396,7 +400,12 @@ public class GameScreen extends ScreenAdapter {
      */
     private void checkGameOver() {
         if (mHeightSoFar - CAMERA_HEIGHT / 2 > mPlayer.getY()) {
+            // プレーヤーを非表示化
             mPlayer.kill();
+
+            // 効果音を鳴らす
+            mSoundKill.play(1.0f);
+
             Gdx.app.log("JampActionGame", "GAMEOVER");
             mGameState = GAME_STATE_GAMEOVER;
         }
@@ -424,9 +433,8 @@ public class GameScreen extends ScreenAdapter {
 
         // UFO(ゴールとの当たり判定)
         if (mPlayer.getBoundingRectangle().overlaps(mUfo.getBoundingRectangle())) {
-            Sound soundCrear = Gdx.audio.newSound(Gdx.files.internal("se/crear.mp3"));
-            soundCrear.play(1.0f);
-            soundCrear.dispose();
+            // 効果音
+            mSoundCrear.play(1.0f);
 
             mGameState = GAME_STATE_GAMEOVER;
             return;
@@ -439,9 +447,7 @@ public class GameScreen extends ScreenAdapter {
             if (mPlayer.getBoundingRectangle().overlaps(enemy.getBoundingRectangle())) {
                 // 敵に衝突した
                 // 効果音を鳴らす
-                Sound soundKill = Gdx.audio.newSound(Gdx.files.internal("se/kill.mp3"));
-                soundKill.play(1.0f);
-                soundKill.dispose();
+                mSoundKill.play(1.0f);
 
                 // プレーヤーを非表示化
                 mPlayer.kill();
@@ -461,9 +467,8 @@ public class GameScreen extends ScreenAdapter {
             }
 
             if (mPlayer.getBoundingRectangle().overlaps(star.getBoundingRectangle())) {
-                Sound soundStar = Gdx.audio.newSound(Gdx.files.internal("se/star.mp3"));
-                soundStar.play(1.0f);
-                soundStar.dispose();
+                // 効果音
+                mSoundStar.play(1.0f);
 
                 star.get();
 
@@ -494,9 +499,8 @@ public class GameScreen extends ScreenAdapter {
 
                 if (mPlayer.getY() > step.getY()) {
                     if (mPlayer.getBoundingRectangle().overlaps(step.getBoundingRectangle())) {
-                        Sound soundJump = Gdx.audio.newSound(Gdx.files.internal("se/jump.mp3"));
-                        soundJump.play(1.0f);
-                        soundJump.dispose();
+                        // 効果音
+                        mSoundJump.play(1.0f);
 
                         mPlayer.hitStep();
                         if (mRandom.nextFloat() > 0.5f) {
@@ -509,4 +513,15 @@ public class GameScreen extends ScreenAdapter {
         }
     }
 
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+
+        // SoundのDispose
+        mSoundCrear.dispose();
+        mSoundKill.dispose();
+        mSoundStar.dispose();
+        mSoundJump.dispose();
+    }
 }
