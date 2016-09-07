@@ -3,6 +3,7 @@ package jp.techacademy.yousuke.tanaka.jumpactiongame;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -420,8 +421,13 @@ public class GameScreen extends ScreenAdapter {
      ゲームバランスを調整する際はこの値も変更してみると良いでしょう。
      */
     private void checkCollision() {
+
         // UFO(ゴールとの当たり判定)
         if (mPlayer.getBoundingRectangle().overlaps(mUfo.getBoundingRectangle())) {
+            Sound soundCrear = Gdx.audio.newSound(Gdx.files.internal("se/crear.mp3"));
+            soundCrear.play(1.0f);
+            soundCrear.dispose();
+
             mGameState = GAME_STATE_GAMEOVER;
             return;
         }
@@ -433,6 +439,9 @@ public class GameScreen extends ScreenAdapter {
             if (mPlayer.getBoundingRectangle().overlaps(enemy.getBoundingRectangle())) {
                 // 敵に衝突した
                 // 効果音を鳴らす
+                Sound soundKill = Gdx.audio.newSound(Gdx.files.internal("se/kill.mp3"));
+                soundKill.play(1.0f);
+                soundKill.dispose();
 
                 // プレーヤーを非表示化
                 mPlayer.kill();
@@ -452,6 +461,10 @@ public class GameScreen extends ScreenAdapter {
             }
 
             if (mPlayer.getBoundingRectangle().overlaps(star.getBoundingRectangle())) {
+                Sound soundStar = Gdx.audio.newSound(Gdx.files.internal("se/star.mp3"));
+                soundStar.play(1.0f);
+                soundStar.dispose();
+
                 star.get();
 
                 mScore++;
@@ -481,6 +494,10 @@ public class GameScreen extends ScreenAdapter {
 
                 if (mPlayer.getY() > step.getY()) {
                     if (mPlayer.getBoundingRectangle().overlaps(step.getBoundingRectangle())) {
+                        Sound soundJump = Gdx.audio.newSound(Gdx.files.internal("se/jump.mp3"));
+                        soundJump.play(1.0f);
+                        soundJump.dispose();
+
                         mPlayer.hitStep();
                         if (mRandom.nextFloat() > 0.5f) {
                             step.vanish();
