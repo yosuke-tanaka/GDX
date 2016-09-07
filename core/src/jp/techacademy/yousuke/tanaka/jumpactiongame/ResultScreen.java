@@ -68,11 +68,14 @@ public class ResultScreen extends ScreenAdapter {
         mFont.draw(mGame.batch, "Retry?", 0, GUI_HEIGHT / 2 - 40, GUI_WIDTH, Align.center, false);
         mGame.batch.end();
 
-        // AdMob
+
         if (Gdx.input.justTouched()) {
+            // AdMob
             if (mGame.mRequestHandler != null) {
                 mGame.mRequestHandler.showAds(false);
             }
+
+            // ゲーム画面に戻る
             mGame.setScreen(new GameScreen(mGame));
         }
 

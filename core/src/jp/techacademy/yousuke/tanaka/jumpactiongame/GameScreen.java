@@ -23,7 +23,7 @@ public class GameScreen extends ScreenAdapter {
     static final float CAMERA_HEIGHT = 15;
 
     static final float WORLD_WIDTH = 10;
-    static final float WORLD_HEIGHT = 15 * 20; // 20画面分登れば終了
+    static final float WORLD_HEIGHT = 15 * 8; // xx画面分登れば終了
 
     // GUI用のカメラのサイズ
     static final float GUI_WIDTH = 320;
@@ -52,7 +52,9 @@ public class GameScreen extends ScreenAdapter {
     List<Star> mStars;
     Ufo mUfo;
     Player mPlayer;
+    List<Enemy> mEnemy;
 
+    static final int NUM_ENEMY_KIND = 3;
 
     // 高さからプレイヤーが地面からどれだけ離れたかを保持
     float mHeightSoFar;
@@ -126,6 +128,7 @@ public class GameScreen extends ScreenAdapter {
         mRandom = new Random();
         mSteps = new ArrayList<Step>();
         mStars = new ArrayList<Star>();
+        mEnemy = new ArrayList<Enemy>();
         mGameState = GAME_STATE_READY;
 
         mTouchPoint = new Vector3();
@@ -205,6 +208,11 @@ public class GameScreen extends ScreenAdapter {
             mStars.get(i).draw(mGame.batch);
         }
 
+        // Enemy
+        for (int i = 0; i < mEnemy.size(); i++) {
+            mEnemy.get(i).draw(mGame.batch);
+        }
+
         // UFO
         mUfo.draw(mGame.batch);
 
@@ -248,6 +256,11 @@ public class GameScreen extends ScreenAdapter {
         Texture starTexture = new Texture("star.png");
         Texture playerTexture = new Texture("uma.png");
         Texture ufoTexture = new Texture("ufo.png");
+        Texture tmpTexture;
+        Texture[] enemyTextures = new Texture[NUM_ENEMY_KIND];
+        enemyTextures[0] = new Texture("enemy1.png");
+        enemyTextures[1] = new Texture("enemy2.png");
+        enemyTextures[2] = new Texture("enemy3.png");
 
         // StepとStarをゴールの高さまで配置していく
         float y = 0;
@@ -257,14 +270,28 @@ public class GameScreen extends ScreenAdapter {
             int type = mRandom.nextFloat() > 0.8f ? Step.STEP_TYPE_MOVING : Step.STEP_TYPE_STATIC;
             float x = mRandom.nextFloat() * (WORLD_WIDTH - Step.STEP_WIDTH);
 
+            // Step
             Step step = new Step(type, stepTexture, 0, 0, 144, 36);
             step.setPosition(x, y);
             mSteps.add(step);
 
+            // Star
             if (mRandom.nextFloat() > 0.6f) {
                 Star star = new Star(starTexture, 0, 0, 72, 72);
                 star.setPosition(step.getX() + mRandom.nextFloat(), step.getY() + Star.STAR_HEIGHT + mRandom.nextFloat() * 3);
                 mStars.add(star);
+            }
+
+            // Enemy
+            else if (mRandom.nextFloat() > 0.7f) {
+                // ランダムでグラフィックを変更
+                tmpTexture = enemyTextures[Math.abs(mRandom.nextInt()) % 3];
+                Enemy enemy = new Enemy(tmpTexture, 0, 0, 72, 72);
+
+                float offset = (mRandom.nextFloat() > 1.0f) ?  (mRandom.nextFloat() * 2) : (mRandom.nextFloat() * (-2));
+                enemy.setPosition(step.getX() + offset, step.getY() + Enemy.ENEMY_HEIGHT + mRandom.nextFloat() * 3);
+
+                mEnemy.add(enemy);
             }
 
             y += (maxJumpHeight - 0.5f);
@@ -334,6 +361,11 @@ public class GameScreen extends ScreenAdapter {
             mSteps.get(i).update(delta);
         }
 
+        // Enemy
+        for (int i = 0; i < mEnemy.size(); i++) {
+            mEnemy.get(i).update(delta);
+        }
+
         // Player
         if (mPlayer.getY() <= 0.5f) {
             mPlayer.hitStep();
@@ -363,6 +395,7 @@ public class GameScreen extends ScreenAdapter {
      */
     private void checkGameOver() {
         if (mHeightSoFar - CAMERA_HEIGHT / 2 > mPlayer.getY()) {
+            mPlayer.kill();
             Gdx.app.log("JampActionGame", "GAMEOVER");
             mGameState = GAME_STATE_GAMEOVER;
         }
@@ -391,6 +424,23 @@ public class GameScreen extends ScreenAdapter {
         if (mPlayer.getBoundingRectangle().overlaps(mUfo.getBoundingRectangle())) {
             mGameState = GAME_STATE_GAMEOVER;
             return;
+        }
+
+        // Enemyとの当たり判定
+        for (int i = 0; i < mEnemy.size(); i++) {
+            Enemy enemy = mEnemy.get(i);
+
+            if (mPlayer.getBoundingRectangle().overlaps(enemy.getBoundingRectangle())) {
+                // 敵に衝突した
+                // 効果音を鳴らす
+
+                // プレーヤーを非表示化
+                mPlayer.kill();
+
+                //ゲームオーバー
+                mGameState = GAME_STATE_GAMEOVER;
+                return;
+            }
         }
 
         // Starとの当たり判定

@@ -16,11 +16,13 @@ public class Player extends GameObject{
     public static final float PLAYER_MOVE_VELOCITY = 20.0f;
 
     int mState;
+    boolean mIsDisp;
 
     public Player(Texture texture, int srcX, int srcY, int srcWidth, int srcHeight) {
         super(texture, srcX, srcY, srcWidth, srcHeight);
         setSize(PLAYER_WIDTH, PLAYER_HEIGHT);
         mState = PLAYER_STATE_FALL;
+        mIsDisp = true;
     }
 
     public void update (float delta, float accelX) {
@@ -55,5 +57,11 @@ public class Player extends GameObject{
     public void hitStep () {
         velocity.y = PLAYER_JUMP_VELOCITY;
         mState = PLAYER_STATE_JUMP;
+    }
+
+    public void kill()
+    {
+        mIsDisp = false;
+        setAlpha(0);
     }
 }
